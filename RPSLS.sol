@@ -190,10 +190,12 @@ contract RPSLS {
         player_choice[players[0]] = 0;
         player_not_played[players[0]] = true;
         player_not_revealed[players[0]] = true;
+        commit_reveal.reset(players[0]);
         if (numPlayer == 2) {
             player_choice[players[1]] = 0;
             player_not_played[players[1]] = true;
             player_not_revealed[players[1]] = true;
+            commit_reveal.reset(players[1]);
         }
 
         
@@ -205,7 +207,6 @@ contract RPSLS {
         numCommit = 0;
         numReveal = 0;
         reward = 0; // Reset the reward
-        commit_reveal.reset();
         emit GameReset();
     }
 }
