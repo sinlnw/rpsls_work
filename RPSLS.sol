@@ -193,5 +193,6 @@ contract RPSLS {
         numReveal = 0;
         reward = 0; // Reset the reward
         commit_reveal.reset();
+        emit GameReset();
     }
 }
