@@ -84,7 +84,7 @@ contract RPSLS {
         player_not_played[msg.sender] = false;
         numCommit++;
 
-        commit_reveal.commit(choice_hash);
+        commit_reveal.commit(choice_hash, msg.sender);  // Pass player address
 
         emit ChoiceCommitted(msg.sender);
         time_commit.setStartTime();
@@ -104,10 +104,10 @@ contract RPSLS {
     }
 
     function reveal_choice(bytes32 choice_data) public {
-        require(numPlayer == 2); // need 2 player to play
-        require(numCommit == 2); // both player commit
-        require(player_not_revealed[msg.sender]); // player not revealed only
-        require(commit_reveal.reveal(choice_data)); // check if reveal is valid
+        require(numPlayer == 2);
+        require(numCommit == 2); // need 2 player commited to reveal
+        require(player_not_revealed[msg.sender]);
+        require(commit_reveal.reveal(choice_data, msg.sender));  // Pass player address
 
         // choice is the last bytes of the choice_data
         player_choice[msg.sender] = uint8(choice_data[31]);
