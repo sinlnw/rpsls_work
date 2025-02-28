@@ -29,6 +29,10 @@ contract RPSLS {
         is_allowed_player[0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2] = true;
         is_allowed_player[0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db] = true;
         is_allowed_player[0x78731D3Ca6b7E34aC0F824c42a7cC18A495cabaB] = true;
+
+        time_add_player.setStartTime();
+        time_commit.setStartTime();
+        time_reveal.setStartTime();
     }
 
     event PlayerAdded(address player, uint8 playerNumber);
@@ -46,6 +50,7 @@ contract RPSLS {
             require(msg.sender != players[0]); // second player can't be the same account as first player
         }
         require(msg.value == 1 ether); // player need to send 1 eth
+
         reward += msg.value;
         player_not_played[msg.sender] = true; // player not played
         player_not_revealed[msg.sender] = true; // player not revealed
@@ -53,6 +58,7 @@ contract RPSLS {
         numPlayer++;
         emit PlayerAdded(msg.sender, numPlayer - 1);
         time_add_player.setStartTime();
+
     }
 
     event test_1();
@@ -64,7 +70,7 @@ contract RPSLS {
         emit test_1();
         require(msg.sender == players[0]); // only player 1 can withdraw
         emit test_2();
-        require(time_add_player.elapsedMinutes() > 1); // player 1 can withdraw after 1 minute
+        require(time_add_player.elapsedSeconds() > 60); // player 1 can withdraw after 1 minute
         emit test_3();
         address payable account0 = payable(players[0]);
         account0.transfer(reward); // send reward to player 1
