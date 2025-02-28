@@ -14,7 +14,7 @@ contract RPSLS {
 
     uint public numInput = 0;
     uint public numCommit = 0;
-    uint public numReveal = 0;
+    uint public numReveal = 0; // not used
     address public constant DEFAULT_ADDRESS =
         0x0000000000000000000000000000000000000000;
     mapping(address => bool) public is_allowed_player;
@@ -29,6 +29,8 @@ contract RPSLS {
         is_allowed_player[0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2] = true;
         is_allowed_player[0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db] = true;
         is_allowed_player[0x78731D3Ca6b7E34aC0F824c42a7cC18A495cabaB] = true;
+
+
     }
 
     event PlayerAdded(address player, uint8 playerNumber);
@@ -57,10 +59,17 @@ contract RPSLS {
         }
     }
 
-    function withdraw_no_player_2() public payable {
+    event test_1();
+    event test_2();
+    event test_3();
+
+    function withdraw_no_player_2() public {
         require(numPlayer == 1); // only one player
+        emit test_1();
         require(msg.sender == players[0]); // only player 1 can withdraw
+        emit test_2();
         require(time_add_player.elapsedMinutes() > 1); // player 1 can withdraw after 1 minute
+        emit test_3();
         address payable account0 = payable(players[0]);
         account0.transfer(reward); // send reward to player 1
         reward = 0;
@@ -81,7 +90,7 @@ contract RPSLS {
         }
     }
 
-    function withdraw_no_commit() public payable {
+    function withdraw_no_commit() public {
         require(numPlayer == 2); // need 2 player to play
         require(numCommit == 1); // only 1 player commit
         require(msg.sender == players[0] || msg.sender == players[1]); // only player 1 or 2 can withdraw
@@ -120,7 +129,7 @@ contract RPSLS {
         }
     }
 
-    function withdraw_no_reveal() public payable {
+    function withdraw_no_reveal() public {
         require(numPlayer == 2); // need 2 player to play
         require(numInput == 1); // only 1 player reveal
         require(msg.sender == players[0] || msg.sender == players[1]); // only player 1 or 2 can withdraw
