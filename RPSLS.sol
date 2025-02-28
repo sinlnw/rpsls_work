@@ -30,6 +30,14 @@ contract RPSLS {
         is_allowed_player[0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db] = true;
         is_allowed_player[0x78731D3Ca6b7E34aC0F824c42a7cC18A495cabaB] = true;
     }
+
+    event PlayerAdded(address player, uint8 playerNumber);
+    event ChoiceCommitted(address player);
+    event ChoiceRevealed(address player, uint choice);
+    event GameReset();
+    event GameWon(address winner, uint reward);
+    event GameTied();
+
     function addPlayer() public payable {
         require(is_allowed_player[msg.sender]);
         require(numPlayer < 2); // only two player allowed
@@ -43,6 +51,7 @@ contract RPSLS {
         player_not_revealed[msg.sender] = true; // player not revealed
         players.push(msg.sender); // add player
         numPlayer++;
+        emit PlayerAdded(msg.sender, numPlayer - 1);
         if (numPlayer == 1) {
             time_add_player.setStartTime();
         }
@@ -65,6 +74,8 @@ contract RPSLS {
         numCommit++;
 
         commit_reveal.commit(choice_hash);
+
+        emit ChoiceCommitted(msg.sender);
         if (numCommit == 1) {
             time_input.setStartTime();
         }
@@ -85,14 +96,21 @@ contract RPSLS {
 
     function reveal_choice(bytes32 choice_data) public {
         require(numPlayer == 2); // need 2 player to play
-        require(numInput == 2); // both player commit
+        require(numCommit == 2); // both player commit
         require(player_not_revealed[msg.sender]); // player not revealed only
         require(commit_reveal.reveal(choice_data)); // check if reveal is valid
 
         // choice is the last bytes of the choice_data
         player_choice[msg.sender] = uint8(choice_data[31]);
+
+        if (player_choice[msg.sender] > 4) {
+            player_choice[msg.sender] = 0;
+        }
+
         player_not_revealed[msg.sender] = false;
         numInput++;
+
+        emit ChoiceRevealed(msg.sender, player_choice[msg.sender]);
         if (numInput == 1) {
             time_reveal.setStartTime();
         }
@@ -138,6 +156,7 @@ contract RPSLS {
             account0.transfer(reward / 2);
             account1.transfer((reward + 1) / 2); // ensure all reward is sent
             reward = 0;
+            emit GameTied();
         } else if (
             (p0Choice == 0 && (p1Choice == 2 || p1Choice == 3)) ||
             (p0Choice == 1 && (p1Choice == 0 || p1Choice == 4)) ||
@@ -147,10 +166,12 @@ contract RPSLS {
         ) {
             // Player 0 wins
             account0.transfer(reward);
+            emit GameWon(players[0], reward);
             reward = 0;
         } else {
             // Player 1 wins
             account1.transfer(reward);
+            emit GameWon(players[1], reward);
             reward = 0;
         }
 
