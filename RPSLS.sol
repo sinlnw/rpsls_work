@@ -20,7 +20,7 @@ contract RPSLS {
     mapping(address => bool) public is_allowed_player;
 
     TimeUnit public time_add_player = new TimeUnit();
-    TimeUnit public time_input = new TimeUnit();
+    TimeUnit public time_commit = new TimeUnit();
     TimeUnit public time_reveal = new TimeUnit();
     CommitReveal public commit_reveal = new CommitReveal();
 
@@ -29,8 +29,6 @@ contract RPSLS {
         is_allowed_player[0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2] = true;
         is_allowed_player[0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db] = true;
         is_allowed_player[0x78731D3Ca6b7E34aC0F824c42a7cC18A495cabaB] = true;
-
-
     }
 
     event PlayerAdded(address player, uint8 playerNumber);
@@ -54,9 +52,7 @@ contract RPSLS {
         players.push(msg.sender); // add player
         numPlayer++;
         emit PlayerAdded(msg.sender, numPlayer - 1);
-        if (numPlayer == 1) {
-            time_add_player.setStartTime();
-        }
+        time_add_player.setStartTime();
     }
 
     event test_1();
@@ -85,16 +81,14 @@ contract RPSLS {
         commit_reveal.commit(choice_hash);
 
         emit ChoiceCommitted(msg.sender);
-        if (numCommit == 1) {
-            time_input.setStartTime();
-        }
+        time_commit.setStartTime();
     }
 
     function withdraw_no_commit() public {
         require(numPlayer == 2); // need 2 player to play
         require(numCommit == 1); // only 1 player commit
         require(msg.sender == players[0] || msg.sender == players[1]); // only player 1 or 2 can withdraw
-        require(time_input.elapsedMinutes() > 1); // player 1 or 2 can withdraw after 1 minute
+        require(time_commit.elapsedMinutes() > 1); // player 1 or 2 can withdraw after 1 minute
         address payable account0 = payable(players[0]);
         address payable account1 = payable(players[1]);
         account0.transfer(reward / 2); // send reward to player 1
@@ -120,9 +114,7 @@ contract RPSLS {
         numInput++;
 
         emit ChoiceRevealed(msg.sender, player_choice[msg.sender]);
-        if (numInput == 1) {
-            time_reveal.setStartTime();
-        }
+        time_reveal.setStartTime();
         if (numInput == 2) {
             // after all player play , check winner
             _checkWinnerAndPay();
@@ -190,9 +182,15 @@ contract RPSLS {
     function _resetGame() private {
         // Reset player choices and played status
         player_choice[players[0]] = 0;
-        player_choice[players[1]] = 0;
         player_not_played[players[0]] = true;
-        player_not_played[players[1]] = true;
+        player_not_revealed[players[0]] = true;
+        if (numPlayer == 2) {
+            player_choice[players[1]] = 0;
+            player_not_played[players[1]] = true;
+            player_not_revealed[players[1]] = true;
+        }
+
+        
 
         // Reset players array and number of players
         delete players; // This will remove all elements from the array
